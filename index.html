@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Business EAD assessment</title>
+  <style>
+    :root {
+      --paper: #f3efe6;
+      --card: #fffcf7;
+      --ink: #1d1a16;
+      --muted: #5e584f;
+      --line: #d9d1c3;
+      --green: #1f4d3a;
+      --amber: #8a5a12;
+      --red: #8c2f2f;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font: 16px/1.45 "Segoe UI", Georgia, sans-serif;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      align-items: end;
+      padding: 28px 40px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+    h1 { font-family: Georgia, serif; font-size: 34px; font-weight: 500; margin: 0; }
+    header p { margin: 6px 0 0; color: var(--muted); max-width: 640px; }
+    main {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 28px;
+      padding: 28px 40px 48px;
+    }
+    form, .board {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 22px;
+    }
+    h2 { font-family: Georgia, serif; font-size: 22px; font-weight: 500; margin: 0 0 14px; }
+    .presets { display: flex; gap: 8px; margin-bottom: 16px; }
+    button, .ghost {
+      border: 0;
+      border-radius: 999px;
+      padding: 10px 14px;
+      font: inherit;
+      cursor: pointer;
+    }
+    button[type="submit"] { background: var(--ink); color: white; width: 100%; margin-top: 8px; }
+    .ghost { background: transparent; border: 1px solid var(--line); color: var(--ink); }
+    label { display: block; margin: 10px 0; color: var(--muted); font-size: 13px; }
+    input {
+      width: 100%;
+      margin-top: 4px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font: inherit;
+      color: var(--ink);
+      background: white;
+    }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+    .result-head { display: flex; justify-content: space-between; align-items: start; gap: 16px; }
+    .pd { font-family: Georgia, serif; font-size: 42px; line-height: 1.05; margin: 0; }
+    .band { margin: 6px 0 0; font-weight: 600; }
+    .band.low, .pass { color: var(--green); }
+    .band.moderate { color: var(--amber); }
+    .band.high, .band.very { color: var(--red); }
+    .empty { color: var(--muted); margin: 0; }
+    ol { list-style: none; margin: 18px 0 0; padding: 0; }
+    li.step {
+      border-top: 1px solid var(--line);
+      padding: 16px 0 8px;
+    }
+    li.step h3 { margin: 0 0 6px; font-size: 16px; }
+    li.step p { margin: 0 0 10px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    td { padding: 4px 0; vertical-align: top; }
+    td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+    .detail { display: block; color: var(--muted); font-size: 12px; }
+    .error { color: var(--red); }
+    .hint { color: var(--muted); font-size: 13px; margin: 4px 0 0; }
+    .story {
+      display: grid;
+      gap: 16px;
+      padding: 24px 40px 0;
+    }
+    .story, .split, .columns, .val-grid, .panel, .help, .lanes, .tech, main, form, .board,
+    .split > *, .columns > *, .val-grid > *, .help > *, .lanes > *, .tech > * {
+      min-width: 0;
+    }
+    .book-wrap { overflow-x: auto; }
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 22px;
+    }
+    .panel h2 { margin-bottom: 8px; }
+    .panel p { margin: 0 0 10px; }
+    .panel p:last-child { margin-bottom: 0; }
+    .split { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 16px; }
+    .help { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+    .help article {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 14px;
+      background: #faf7f1;
+    }
+    .help h3, .tech h3 { margin: 0 0 4px; font-size: 15px; }
+    .help p, .tech p { margin: 0; color: var(--muted); font-size: 14px; }
+    .flow {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin: 14px 0 4px;
+    }
+    .flow span {
+      background: #faf7f1;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 14px;
+    }
+    .flow i { color: var(--muted); font-style: normal; }
+    .lanes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 12px; }
+    .lanes article, .tech article {
+      border-top: 1px solid var(--line);
+      padding-top: 10px;
+    }
+    .lanes h3 { margin: 0 0 4px; font-size: 15px; }
+    .lanes p { margin: 0; color: var(--muted); font-size: 14px; }
+    .tech { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px 16px; margin-top: 8px; }
+    .columns { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    ol.plain { margin: 8px 0 0; padding-left: 20px; }
+    ol.plain li { margin: 8px 0; }
+    ol.plain strong { font-weight: 600; }
+    .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 14px 0; }
+    .metrics div { border-top: 2px solid var(--ink); padding-top: 8px; }
+    .metrics strong { display: block; font-family: Georgia, serif; font-size: 28px; font-weight: 500; line-height: 1.1; }
+    .metrics span { color: var(--muted); font-size: 13px; }
+    .formula {
+      font-family: Georgia, serif;
+      font-size: 26px;
+      line-height: 1.25;
+      margin: 12px 0;
+    }
+    .caption { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
+.val-grid h3 { margin: 0 0 8px; font-size: 15px; }
+    .chart { width: 100%; height: auto; }
+    .book { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .book th, .book td {
+      padding: 10px 8px;
+      text-align: right;
+      border-bottom: 1px solid var(--line);
+      font-variant-numeric: tabular-nums;
+    }
+    .book th {
+      font-weight: 600;
+      font-size: 12px;
+      color: var(--muted);
+      border-bottom: 1px solid var(--ink);
+    }
+    .book th:first-child, .book td:first-child { text-align: left; }
+    .book tbody tr { cursor: pointer; }
+    .book tbody tr:hover, .book tbody tr.active { background: #faf7f1; }
+    .book tbody tr:focus { outline: 2px solid var(--ink); outline-offset: -2px; }
+    .legend { display: flex; gap: 16px; margin-top: 8px; font-size: 13px; color: var(--muted); }
+    .swatch { display: inline-block; width: 12px; height: 12px; margin-right: 6px; vertical-align: -1px; }
+    .val-grid { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 28px; align-items: center; }
+    @media (max-width: 900px) {
+      header, main, .story { padding-left: 16px; padding-right: 16px; }
+      main, .split, .help, .columns, .lanes, .tech, .val-grid, .metrics { grid-template-columns: 1fr; }
+      h1 { font-size: 28px; }
+      .pd { font-size: 34px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Business EAD assessment</h1>
+      <p>One facility in, an exposure at default out. Probability of default and loss given default then turn that exposure into an expected loss.</p>
+    </div>
+  </header>
+
+  <section class="story">
+    <div class="split">
+      <article class="panel">
+        <h2>Business problem</h2>
+        <p>A lender has to know, for every business facility, how much it will still be owed if the borrower defaults. On a revolving line the statement balance is only the amount drawn today. The borrower can still use part of the unused limit before default.</p>
+        <p>Exposure at Default (EAD) is that amount. For a business loan it is the outstanding principal, including the current balance, plus an estimate of how much of the unused limit will be drawn. That estimate is the credit conversion factor (CCF) times the undrawn limit.</p>
+        <p>The five facilities below are a teaching book. A live book would set the CCF from the institution’s own record of drawdown before default. A facility that is already fully drawn has an undrawn limit of zero, so its EAD is the current balance.</p>
+      </article>
+      <article class="panel">
+        <h2>How this helps</h2>
+        <div class="help">
+          <article>
+            <h3>One identity, every file</h3>
+            <p>The same checks and the same formula run on each facility, so the exposures can be compared across the book.</p>
+          </article>
+          <article>
+            <h3>A rupee amount</h3>
+            <p>The result is the exposure at default, in rupees, together with the part that is still undrawn today.</p>
+          </article>
+          <article>
+            <h3>The reason stays visible</h3>
+            <p>Each stage is written down: the inputs, the checks, the undrawn limit, the expected draw, and the EAD.</p>
+          </article>
+          <article>
+            <h3>Balance and draw stay apart</h3>
+            <p>The amount already owed and the amount still expected to be drawn are shown separately, then added.</p>
+          </article>
+        </div>
+      </article>
+    </div>
+
+    <article class="panel">
+      <h2>The calculation</h2>
+      <p>EAD on this page is an identity. The undrawn limit is the loan limit minus the current balance. The expected draw is the CCF times that undrawn limit. EAD adds the expected draw to the current balance.</p>
+      <p class="formula">EAD = Current balance + CCF × Undrawn limit</p>
+      <p>L001 works out as ₹70,00,000 + 50% × ₹30,00,000 = ₹85,00,000.</p>
+      <div class="flow">
+        <span>Loan limit</span><i>→</i>
+        <span>Current balance</span><i>→</i>
+        <span>Undrawn limit</span><i>→</i>
+        <span>CCF × undrawn</span><i>→</i>
+        <span>EAD</span>
+      </div>
+      <div class="lanes">
+        <article>
+          <h3>This page</h3>
+          <p>Takes the facility you type and walks the calculation one stage at a time.</p>
+        </article>
+        <article>
+          <h3>The credit conversion factor</h3>
+          <p>The share of the unused limit the bank expects the borrower to draw before default. 50% of ₹30,00,000 is ₹15,00,000.</p>
+        </article>
+        <article>
+          <h3>The example book</h3>
+          <p>Five facilities, each reduced with the same identity, so the rupee amounts can be read side by side.</p>
+        </article>
+      </div>
+    </article>
+
+    <article class="panel">
+      <h2>What goes into the identity</h2>
+      <div class="tech">
+        <article>
+          <h3>Loan limit</h3>
+          <p>The sanctioned amount. The borrower cannot draw more than this.</p>
+        </article>
+        <article>
+          <h3>Current balance</h3>
+          <p>The amount already drawn and still outstanding on the assessment date.</p>
+        </article>
+        <article>
+          <h3>Undrawn limit</h3>
+          <p>Loan limit minus current balance. This is the room left to draw.</p>
+        </article>
+        <article>
+          <h3>CCF</h3>
+          <p>The fraction of that room expected to be used before default. Enter it as a percent.</p>
+        </article>
+      </div>
+    </article>
+
+    <article class="panel">
+      <h2>Example book</h2>
+      <p>These five facilities are the teaching set. Expected draw is CCF times the undrawn limit. EAD is the current balance plus that draw. Select a row to load it into the facility form.</p>
+      <div class="metrics" id="metrics"></div>
+      <div class="val-grid">
+        <div>
+          <div class="book-wrap">
+            <table class="book" id="book"></table>
+          </div>
+          <p class="caption">Amounts in rupees. CCF is the credit conversion factor on the undrawn limit.</p>
+        </div>
+        <div>
+          <h3>Current balance and expected draw</h3>
+          <div id="chart"></div>
+          <div class="legend">
+            <span><i class="swatch" style="background:#1d1a16"></i>Current balance</span>
+            <span><i class="swatch" style="background:#1f4d3a"></i>Expected draw</span>
+          </div>
+          <p class="caption">The top of each bar is EAD. The axis is in crore rupees. One crore is ₹1,00,00,000.</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="panel">
+      <h2>Expected loss</h2>
+      <p>The same five loans can be read with the probability of default and the loss given default. PD is how likely default is. EAD is how much will be owed if it happens. LGD is the share of that amount the bank does not recover. Expected loss multiplies the three.</p>
+      <p class="formula">Expected loss = PD × EAD × LGD</p>
+      <p>L001 is 5% × ₹85L × 30% = ₹1.275L. That is ₹1,27,500. One lakh (1L) is ₹1,00,000. Select a row to load the loan, including its PD and LGD.</p>
+      <div class="flow">
+        <span>PD</span><i>×</i>
+        <span>EAD</span><i>×</i>
+        <span>LGD</span><i>→</i>
+        <span>Expected loss</span>
+      </div>
+      <div class="lanes">
+        <article>
+          <h3>PD</h3>
+          <p>The probability the borrower defaults. These rates are the teaching inputs for this book.</p>
+        </article>
+        <article>
+          <h3>EAD</h3>
+          <p>The exposure from the identity above. ₹85L is the ₹85,00,000 on L001.</p>
+        </article>
+        <article>
+          <h3>LGD</h3>
+          <p>The share of EAD lost if default occurs. Expected loss weights that share by the PD.</p>
+        </article>
+      </div>
+      <div class="metrics" id="loss-metrics"></div>
+      <div class="val-grid">
+        <div>
+          <div class="book-wrap">
+            <table class="book" id="loss"></table>
+          </div>
+          <p class="caption">EAD is shown in lakh so it can be read next to the expected loss. The rupee amount is in the review.</p>
+        </div>
+        <div>
+          <h3>Expected loss by loan</h3>
+          <div id="loss-chart"></div>
+          <div class="legend">
+            <span><i class="swatch" style="background:#8a5a12"></i>Expected loss</span>
+          </div>
+          <p class="caption">The axis is in lakh rupees. L003 is the largest expected loss on this book.</p>
+        </div>
+      </div>
+    </article>
+
+    <div class="columns">
+      <article class="panel">
+        <h2>How a facility is read</h2>
+        <ol class="plain">
+          <li><strong>Limit and balance.</strong> The sanctioned limit and the amount already drawn.</li>
+          <li><strong>Undrawn limit.</strong> Limit minus balance. The figure on the file has to match.</li>
+          <li><strong>CCF.</strong> The share of the undrawn limit expected to be drawn before default.</li>
+          <li><strong>Expected draw.</strong> CCF times the undrawn limit.</li>
+          <li><strong>EAD.</strong> Current balance plus the expected draw.</li>
+          <li><strong>Expected loss.</strong> PD times that EAD times LGD.</li>
+        </ol>
+      </article>
+      <article class="panel">
+        <h2>What you will see</h2>
+        <p>Enter a facility, or use High undrawn and Mostly drawn, then choose Run assessment. You can also select a row in either book. The review appears in this order:</p>
+        <ol class="plain">
+          <li><strong>Facility received.</strong> The figures you entered, including PD and LGD.</li>
+          <li><strong>Data checks.</strong> Limit, balance, undrawn limit, CCF, PD, and LGD, each pass or fail.</li>
+          <li><strong>Undrawn limit.</strong> Loan limit minus current balance.</li>
+          <li><strong>Expected draw.</strong> The credit conversion factor times the undrawn limit.</li>
+          <li><strong>Exposure at default.</strong> Current balance plus the expected draw.</li>
+          <li><strong>Expected loss.</strong> PD times EAD times LGD.</li>
+          <li><strong>Assessment.</strong> One sentence with the loan, the EAD, and the expected loss.</li>
+        </ol>
+      </article>
+    </div>
+  </section>
+
+  <main>
+    <form id="facility">
+      <h2>Facility</h2>
+      <div class="presets">
+        <button class="ghost" type="button" id="high-undrawn">High undrawn</button>
+        <button class="ghost" type="button" id="mostly-drawn">Mostly drawn</button>
+      </div>
+      <label>Loan id
+        <input name="loan_id" required value="L001" autocomplete="off">
+      </label>
+      <div class="grid">
+        <label>Loan limit (₹)
+          <input name="loan_limit" type="number" min="0" step="1" required value="10000000">
+        </label>
+        <label>Current balance (₹)
+          <input name="current_balance" type="number" min="0" step="1" required value="7000000">
+        </label>
+        <label>Undrawn limit (₹)
+          <input name="undrawn_limit" type="number" min="0" step="1" required value="3000000">
+        </label>
+        <label>CCF (%)
+          <input name="ccf" type="number" step="0.01" required value="50">
+        </label>
+        <label>PD (%)
+          <input name="pd" type="number" step="0.01" required value="5">
+        </label>
+        <label>LGD (%)
+          <input name="lgd" type="number" step="0.01" required value="30">
+        </label>
+      </div>
+      <p class="hint" id="undrawn-hint"></p>
+      <button type="submit">Run assessment</button>
+      <p class="error" id="form-error" hidden></p>
+    </form>
+
+    <section class="board" aria-live="polite">
+      <div class="result-head">
+        <h2>Review</h2>
+        <div id="headline"></div>
+      </div>
+      <p class="empty" id="placeholder">The steps will appear here, one at a time.</p>
+      <ol id="steps"></ol>
+    </section>
+  </main>
+
+  <script>
+    const book = [
+      { loan_id: "L001", loan_limit: 10000000, current_balance: 7000000, undrawn_limit: 3000000, ccf: 0.50, pd: 0.05, lgd: 0.30 },
+      { loan_id: "L002", loan_limit: 5000000, current_balance: 4000000, undrawn_limit: 1000000, ccf: 0.50, pd: 0.03, lgd: 0.40 },
+      { loan_id: "L003", loan_limit: 20000000, current_balance: 12000000, undrawn_limit: 8000000, ccf: 0.40, pd: 0.08, lgd: 0.35 },
+      { loan_id: "L004", loan_limit: 7500000, current_balance: 6000000, undrawn_limit: 1500000, ccf: 0.60, pd: 0.06, lgd: 0.25 },
+      { loan_id: "L005", loan_limit: 15000000, current_balance: 11000000, undrawn_limit: 4000000, ccf: 0.25, pd: 0.04, lgd: 0.30 }
+    ];
+
+    function inr(value) {
+      return new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+        maximumFractionDigits: 0
+      }).format(Math.round(value));
+    }
+
+    function pct(rate) {
+      const points = rate * 100;
+      const digits = Math.abs(points - Math.round(points)) < 1e-9 ? 0 : 1;
+      return points.toFixed(digits) + "%";
+    }
+
+    function crore(value) {
+      return "₹" + (value / 10000000).toLocaleString("en-IN", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }) + " crore";
+    }
+
+    function lakh(value, decimals) {
+      const amount = value / 100000;
+      const text = decimals == null ? String(Math.round(amount)) : amount.toFixed(decimals);
+      return "₹" + text + "L";
+    }
+
+    function exposure(row) {
+      const expected = row.ccf * row.undrawn_limit;
+      return {
+        expected,
+        ead: row.current_balance + expected
+      };
+    }
+
+    function lossOf(row) {
+      const ead = exposure(row).ead;
+      return { ead, el: row.pd * ead * row.lgd };
+    }
+
+    function renderBook() {
+      const totals = book.reduce((sum, row) => {
+        const result = exposure(row);
+        sum.limit += row.loan_limit;
+        sum.balance += row.current_balance;
+        sum.undrawn += row.undrawn_limit;
+        sum.expected += result.expected;
+        sum.ead += result.ead;
+        return sum;
+      }, { limit: 0, balance: 0, undrawn: 0, expected: 0, ead: 0 });
+
+      document.querySelector("#metrics").innerHTML = [
+        [crore(totals.ead), "Book EAD"],
+        [crore(totals.balance), "Drawn today"],
+        [crore(totals.expected), "Expected extra draw"],
+        [pct(totals.expected / totals.undrawn), "Of undrawn limit converted"]
+      ].map(([value, label]) => `<div><strong>${value}</strong><span>${label}</span></div>`).join("");
+
+      const head = "<thead><tr><th>Loan ID</th><th>Loan limit</th><th>Current balance</th><th>Undrawn limit</th><th>CCF</th><th>Expected draw</th><th>EAD</th></tr></thead>";
+      const body = book.map((row) => {
+        const result = exposure(row);
+        return `<tr data-id="${row.loan_id}" tabindex="0" role="button" aria-label="Load ${row.loan_id}">
+          <td>${row.loan_id}</td>
+          <td>${inr(row.loan_limit)}</td>
+          <td>${inr(row.current_balance)}</td>
+          <td>${inr(row.undrawn_limit)}</td>
+          <td>${pct(row.ccf)}</td>
+          <td>${inr(result.expected)}</td>
+          <td>${inr(result.ead)}</td>
+        </tr>`;
+      }).join("");
+      document.querySelector("#book").innerHTML = head + "<tbody>" + body + "</tbody>";
+
+      const width = 520;
+      const height = 280;
+      const left = 44;
+      const right = 8;
+      const top = 16;
+      const bottom = 36;
+      const plotW = width - left - right;
+      const plotH = height - top - bottom;
+      const max = 2;
+      const group = plotW / book.length;
+      const barW = group * 0.46;
+      const yOf = (crores) => top + plotH - (crores / max) * plotH;
+      let bars = "";
+      let labels = "";
+      book.forEach((row, index) => {
+        const result = exposure(row);
+        const balanceCr = row.current_balance / 10000000;
+        const drawCr = result.expected / 10000000;
+        const x = left + index * group + (group - barW) / 2;
+        const balanceH = (balanceCr / max) * plotH;
+        const drawH = (drawCr / max) * plotH;
+        bars += `<rect x="${x.toFixed(1)}" y="${yOf(balanceCr).toFixed(1)}" width="${barW.toFixed(1)}" height="${balanceH.toFixed(1)}" fill="#1d1a16"><title>${row.loan_id} balance ${inr(row.current_balance)}</title></rect>`;
+        bars += `<rect x="${x.toFixed(1)}" y="${yOf(balanceCr + drawCr).toFixed(1)}" width="${barW.toFixed(1)}" height="${drawH.toFixed(1)}" fill="#1f4d3a"><title>${row.loan_id} expected draw ${inr(result.expected)}, EAD ${inr(result.ead)}</title></rect>`;
+        labels += `<text x="${(x + barW / 2).toFixed(1)}" y="${height - 12}" text-anchor="middle" font-size="11" fill="#5e584f">${row.loan_id}</text>`;
+      });
+      let grid = "";
+      [0, 0.5, 1, 1.5, 2].forEach((tick) => {
+        const y = yOf(tick);
+        grid += `<line x1="${left}" y1="${y}" x2="${width - right}" y2="${y}" stroke="#d9d1c3"/>`;
+        grid += `<text x="${left - 8}" y="${y + 4}" text-anchor="end" font-size="11" fill="#5e584f">${tick.toFixed(1)}</text>`;
+      });
+      document.querySelector("#chart").innerHTML = `<svg class="chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="Stacked bar chart of current balance and expected draw for five facilities. The top of each bar is exposure at default.">
+        ${grid}${bars}${labels}
+        <text x="14" y="${top + plotH / 2}" text-anchor="middle" font-size="11" fill="#5e584f" transform="rotate(-90 14 ${top + plotH / 2})">₹ crore</text>
+      </svg>`;
+
+      const lossTotals = book.reduce((sum, row) => {
+        const result = lossOf(row);
+        sum.ead += result.ead;
+        sum.el += result.el;
+        sum.pdEad += row.pd * result.ead;
+        return sum;
+      }, { ead: 0, el: 0, pdEad: 0 });
+      document.querySelector("#loss-metrics").innerHTML = [
+        [lakh(lossTotals.el, 3), "Book expected loss"],
+        [lakh(lossTotals.ead), "Book EAD"],
+        [pct(lossTotals.pdEad / lossTotals.ead), "EAD-weighted PD"],
+        [pct(lossTotals.el / lossTotals.ead), "Expected loss / EAD"]
+      ].map(([value, label]) => `<div><strong>${value}</strong><span>${label}</span></div>`).join("");
+
+      const lossHead = "<thead><tr><th>Loan ID</th><th>PD</th><th>EAD</th><th>LGD</th><th>Expected loss</th></tr></thead>";
+      const lossBody = book.map((row) => {
+        const result = lossOf(row);
+        return `<tr data-id="${row.loan_id}" tabindex="0" role="button" aria-label="Load ${row.loan_id}">
+          <td>${row.loan_id}</td>
+          <td>${pct(row.pd)}</td>
+          <td>${lakh(result.ead)}</td>
+          <td>${pct(row.lgd)}</td>
+          <td>${lakh(result.el, 3)}</td>
+        </tr>`;
+      }).join("");
+      document.querySelector("#loss").innerHTML = lossHead + "<tbody>" + lossBody + "</tbody>";
+
+      const lossMax = 5;
+      const yLoss = (lakhs) => top + plotH - (lakhs / lossMax) * plotH;
+      let lossBars = "";
+      let lossLabels = "";
+      book.forEach((row, index) => {
+        const lakhs = lossOf(row).el / 100000;
+        const x = left + index * group + (group - barW) / 2;
+        const h = (lakhs / lossMax) * plotH;
+        lossBars += `<rect x="${x.toFixed(1)}" y="${yLoss(lakhs).toFixed(1)}" width="${barW.toFixed(1)}" height="${h.toFixed(1)}" fill="#8a5a12"><title>${row.loan_id} expected loss ${lakh(lossOf(row).el, 3)}</title></rect>`;
+        lossLabels += `<text x="${(x + barW / 2).toFixed(1)}" y="${height - 12}" text-anchor="middle" font-size="11" fill="#5e584f">${row.loan_id}</text>`;
+      });
+      let lossGrid = "";
+      [0, 1, 2, 3, 4, 5].forEach((tick) => {
+        const y = yLoss(tick);
+        lossGrid += `<line x1="${left}" y1="${y}" x2="${width - right}" y2="${y}" stroke="#d9d1c3"/>`;
+        lossGrid += `<text x="${left - 8}" y="${y + 4}" text-anchor="end" font-size="11" fill="#5e584f">${tick.toFixed(0)}</text>`;
+      });
+      document.querySelector("#loss-chart").innerHTML = `<svg class="chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="Bar chart of expected loss in lakh rupees for five loans.">
+        ${lossGrid}${lossBars}${lossLabels}
+        <text x="14" y="${top + plotH / 2}" text-anchor="middle" font-size="11" fill="#5e584f" transform="rotate(-90 14 ${top + plotH / 2})">₹ lakh</text>
+      </svg>`;
+    }
+
+    renderBook();
+
+    const form = document.querySelector("#facility");
+    const steps = document.querySelector("#steps");
+    const placeholder = document.querySelector("#placeholder");
+    const headline = document.querySelector("#headline");
+    const error = document.querySelector("#form-error");
+    const hint = document.querySelector("#undrawn-hint");
+    let timers = [];
+
+    function fill(row) {
+      form.elements.loan_id.value = row.loan_id;
+      form.elements.loan_limit.value = row.loan_limit;
+      form.elements.current_balance.value = row.current_balance;
+      form.elements.undrawn_limit.value = row.undrawn_limit;
+      form.elements.ccf.value = Math.round(row.ccf * 10000) / 100;
+      form.elements.pd.value = Math.round(row.pd * 10000) / 100;
+      form.elements.lgd.value = Math.round(row.lgd * 10000) / 100;
+      refreshHint();
+      markActive();
+    }
+
+    function markActive() {
+      const id = form.elements.loan_id.value.trim();
+      document.querySelectorAll("tr[data-id]").forEach((tr) => {
+        tr.classList.toggle("active", tr.dataset.id === id);
+      });
+    }
+
+    function refreshHint() {
+      const limit = Number(form.elements.loan_limit.value);
+      const balance = Number(form.elements.current_balance.value);
+      if (!Number.isFinite(limit) || !Number.isFinite(balance)) {
+        hint.textContent = "";
+        return;
+      }
+      hint.textContent = "Limit minus balance is " + inr(limit - balance) + ".";
+    }
+
+    document.querySelector("#high-undrawn").addEventListener("click", () => fill(book[2]));
+    document.querySelector("#mostly-drawn").addEventListener("click", () => fill(book[1]));
+    ["loan_limit", "current_balance", "loan_id"].forEach((name) => {
+      form.elements[name].addEventListener("input", () => {
+        refreshHint();
+        markActive();
+      });
+    });
+
+    function bindBook(root) {
+      root.addEventListener("click", (event) => {
+        const row = event.target.closest("tr[data-id]");
+        if (!row) return;
+        fill(book.find((item) => item.loan_id === row.dataset.id));
+      });
+      root.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        const row = event.target.closest("tr[data-id]");
+        if (!row) return;
+        event.preventDefault();
+        fill(book.find((item) => item.loan_id === row.dataset.id));
+      });
+    }
+    bindBook(document.querySelector("#book"));
+    bindBook(document.querySelector("#loss"));
+
+    refreshHint();
+    markActive();
+
+    function renderStep(step, index) {
+      const item = document.createElement("li");
+      item.className = "step";
+      const rows = (step.items || []).map((row) => {
+        const tone = row.value === "Pass" ? "pass" : row.value === "Fail" ? "error" : "";
+        const detail = row.detail ? `<span class="detail">${row.detail}</span>` : "";
+        return `<tr><td>${row.label}${detail}</td><td class="${tone}">${row.value}</td></tr>`;
+      }).join("");
+      item.innerHTML = `<h3>${index}. ${step.title}</h3><p>${step.summary}</p>${rows ? `<table>${rows}</table>` : ""}`;
+      steps.appendChild(item);
+    }
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      timers.forEach(clearTimeout);
+      timers = [];
+      error.hidden = true;
+      const loanId = form.elements.loan_id.value.trim();
+      const limit = Number(form.elements.loan_limit.value);
+      const balance = Number(form.elements.current_balance.value);
+      const undrawn = Number(form.elements.undrawn_limit.value);
+      const ccfPercent = Number(form.elements.ccf.value);
+      const pdPercent = Number(form.elements.pd.value);
+      const lgdPercent = Number(form.elements.lgd.value);
+      const implied = limit - balance;
+      const ccf = ccfPercent / 100;
+      const pd = pdPercent / 100;
+      const lgd = lgdPercent / 100;
+      const expected = ccf * undrawn;
+      const ead = balance + expected;
+      const el = pd * ead * lgd;
+
+      const checks = [
+        { label: "Loan id", detail: "A facility needs an id.", value: loanId ? "Pass" : "Fail" },
+        { label: "Loan limit", detail: "The sanctioned amount has to be greater than zero.", value: limit > 0 ? "Pass" : "Fail" },
+        { label: "Current balance", detail: "The outstanding amount cannot be negative.", value: balance >= 0 ? "Pass" : "Fail" },
+        { label: "Balance within limit", detail: "The current balance cannot exceed the loan limit.", value: balance <= limit ? "Pass" : "Fail" },
+        { label: "Undrawn limit", detail: "Limit minus balance is " + inr(implied) + ".", value: undrawn >= 0 && Math.abs(undrawn - implied) < 0.5 ? "Pass" : "Fail" },
+        { label: "CCF", detail: "The credit conversion factor is a percent from 0 to 100.", value: ccfPercent >= 0 && ccfPercent <= 100 ? "Pass" : "Fail" },
+        { label: "PD", detail: "The probability of default is a percent from 0 to 100.", value: pdPercent >= 0 && pdPercent <= 100 ? "Pass" : "Fail" },
+        { label: "LGD", detail: "The loss given default is a percent from 0 to 100.", value: lgdPercent >= 0 && lgdPercent <= 100 ? "Pass" : "Fail" }
+      ];
+      const failed = checks.some((check) => check.value === "Fail");
+      const review = [
+        {
+          title: "Facility received",
+          summary: loanId + " is the facility under review. Amounts are in rupees.",
+          items: [
+            { label: "Loan id", value: loanId || "—" },
+            { label: "Loan limit", value: inr(limit) },
+            { label: "Current balance", value: inr(balance) },
+            { label: "Undrawn limit", value: inr(undrawn) },
+            { label: "CCF", value: pct(ccf) },
+            { label: "PD", value: pct(pd) },
+            { label: "LGD", value: pct(lgd) }
+          ]
+        },
+        {
+          title: "Data checks",
+          summary: failed
+            ? "A check failed, so the exposure and the expected loss are not calculated."
+            : "Limit, balance, undrawn limit, CCF, PD, and LGD are consistent.",
+          items: checks
+        }
+      ];
+      if (!failed) {
+        review.push(
+          {
+            title: "Undrawn limit",
+            summary: "The room left to draw is the loan limit minus the current balance.",
+            items: [
+              { label: "Loan limit − current balance", detail: inr(limit) + " − " + inr(balance), value: inr(implied) }
+            ]
+          },
+          {
+            title: "Expected draw",
+            summary: "The credit conversion factor is applied only to the undrawn limit.",
+            items: [
+              { label: "CCF × undrawn limit", detail: pct(ccf) + " × " + inr(undrawn), value: inr(expected) }
+            ]
+          },
+          {
+            title: "Exposure at default",
+            summary: "EAD adds the amount already owed to the amount still expected to be drawn.",
+            items: [
+              { label: "Current balance + expected draw", detail: inr(balance) + " + " + inr(expected), value: inr(ead) },
+              { label: "EAD as a share of the limit", detail: inr(ead) + " / " + inr(limit), value: limit > 0 ? pct(ead / limit) : "—" }
+            ]
+          },
+          {
+            title: "Expected loss",
+            summary: "Expected loss weights the exposure by how likely default is and by how much of the exposure would be lost.",
+            items: [
+              { label: "PD × EAD × LGD", detail: pct(pd) + " × " + inr(ead) + " × " + pct(lgd), value: inr(el) },
+              { label: "In lakh", detail: "1L is ₹1,00,000.", value: lakh(el, 3) }
+            ]
+          },
+          {
+            title: "Assessment",
+            summary: loanId + " has an exposure at default of " + inr(ead) + ". With a probability of default of " + pct(pd) + " and a loss given default of " + pct(lgd) + ", the expected loss is " + inr(el) + "."
+          }
+        );
+      }
+
+      steps.replaceChildren();
+      headline.replaceChildren();
+      placeholder.hidden = false;
+      placeholder.textContent = "Running the review…";
+
+      review.forEach((step, index) => {
+        timers.push(setTimeout(() => {
+          if (index === 0) placeholder.hidden = true;
+          renderStep(step, index + 1);
+          if (!failed && index === review.length - 1) {
+            const tone = pd < 0.05 ? "low" : pd < 0.07 ? "moderate" : "high";
+            headline.innerHTML = `<p class="pd">${inr(el)}</p><p class="band ${tone}">Expected loss · EAD ${inr(ead)}</p>`;
+          }
+        }, index * 700));
+      });
+    });
+  </script>
+</body>
+</html>
