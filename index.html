@@ -540,7 +540,7 @@
       }, { ead: 0, el: 0, pdEad: 0 });
       document.querySelector("#loss-metrics").innerHTML = [
         [lakh(lossTotals.el, 3), "Book expected loss"],
-        [lakh(lossTotals.ead), "Book EAD"],
+        [crore(lossTotals.ead), "Book EAD"],
         [pct(lossTotals.pdEad / lossTotals.ead), "EAD-weighted PD"],
         [pct(lossTotals.el / lossTotals.ead), "Expected loss / EAD"]
       ].map(([value, label]) => `<div><strong>${value}</strong><span>${label}</span></div>`).join("");
